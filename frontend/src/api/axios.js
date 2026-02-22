@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: '/api' });
+// In production (Vercel) set REACT_APP_API_URL to your deployed backend URL, e.g.
+// https://felicity-backend.onrender.com/api
+// In development the CRA proxy handles /api → http://localhost:5000
+const API = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || '/api',
+});
 
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('felicity_token');
