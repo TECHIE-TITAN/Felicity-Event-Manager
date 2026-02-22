@@ -29,6 +29,7 @@ const EventDetail = () => {
     fetchDiscussion();
     // Mark discussion as read when opening the event page
     localStorage.setItem(`discussionLastRead_${id}`, new Date().toISOString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchEvent = async () => {

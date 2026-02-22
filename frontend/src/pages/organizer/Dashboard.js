@@ -14,7 +14,6 @@ const OrganizerDashboard = () => {
   const published = events.filter(e => e.status === 'published');
   const ongoing = events.filter(e => e.status === 'ongoing');
   const draft = events.filter(e => e.status === 'draft');
-  const completed = events.filter(e => e.status === 'completed');
 
   const totalRevenue = events.reduce((sum, e) => sum + (e.analytics?.revenue || 0), 0);
   const totalRegs = events.reduce((sum, e) => sum + (e.analytics?.totalRegistrations || 0), 0);

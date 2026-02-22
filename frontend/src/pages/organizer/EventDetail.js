@@ -20,7 +20,6 @@ const OrganizerEventDetail = () => {
   const [editForm, setEditForm] = useState({});
   const [editVariants, setEditVariants] = useState([]);
   const [newVariant, setNewVariant] = useState({ product: '', size: '', color: '', price: 0, stock: 0 });
-  const [scanInput, setScanInput] = useState('');
   const [manualTicket, setManualTicket] = useState('');
   const [overrideReason, setOverrideReason] = useState('');
   const [newMessage, setNewMessage] = useState('');
@@ -33,6 +32,7 @@ const OrganizerEventDetail = () => {
 
   useEffect(() => {
     fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchAll = async () => {
@@ -111,18 +111,6 @@ const OrganizerEventDetail = () => {
       fetchAll();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed');
-    }
-  };
-
-  const handleQRScan = async () => {
-    if (!scanInput.trim()) return;
-    try {
-      await API.post('/attendance/scan', { ticketData: scanInput });
-      setSuccess('Attendance marked!');
-      setScanInput('');
-      fetchAll();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Scan failed');
     }
   };
 

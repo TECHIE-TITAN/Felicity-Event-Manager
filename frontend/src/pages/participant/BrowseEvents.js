@@ -23,6 +23,7 @@ const BrowseEvents = () => {
   useEffect(() => {
     API.get('/events/trending').then(r => setTrending(r.data)).catch(() => {});
     fetchEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFilter = e => setFilters({ ...filters, [e.target.name]: e.target.value });
