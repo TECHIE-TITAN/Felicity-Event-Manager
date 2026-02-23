@@ -1,16 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import ReCAPTCHA from 'react-google-recaptcha';
 import API from '../../api/axios';
 
 const Register = () => {
   const navigate = useNavigate();
-  const recaptchaRef = useRef(null);
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
     participantType: 'EXTERNAL', collegeName: '', contactNumber: ''
   });
-  const [captchaToken, setCaptchaToken] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,22 +30,15 @@ const Register = () => {
       setError('Passwords do not match');
       return;
     }
-    if (!captchaToken) {
-      setError('Please complete the CAPTCHA verification.');
-      return;
-    }
     setLoading(true);
     try {
       const { confirmPassword, ...payload } = form;
       payload.interests = [];
-      payload.captchaToken = captchaToken;
       await API.post('/auth/register', payload);
       setSuccess('Registration successful! Check your email for the OTP code.');
       setTimeout(() => navigate('/verify-email', { state: { email: form.email, password: form.password } }), 1500);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
-      recaptchaRef.current?.reset();
-      setCaptchaToken('');
     } finally {
       setLoading(false);
     }
@@ -113,16 +103,7 @@ const Register = () => {
             <label className="form-label">Confirm Password</label>
             <input type="password" name="confirmPassword" className="form-input" value={form.confirmPassword} onChange={handleChange} required />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
-              onChange={token => setCaptchaToken(token || '')}
-              onExpired={() => setCaptchaToken('')}
-              theme="dark"
-            />
-          </div>
-          <button type="submit" className="btn btn-primary w-full btn-lg" disabled={loading || !captchaToken}>
+          <button type="submit" className="btn btn-primary w-full btn-lg" disabled={loading}>
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>

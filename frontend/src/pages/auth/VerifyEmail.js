@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
 import API from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 
@@ -7,9 +8,11 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const recaptchaRef = useRef(null);
   const [email, setEmail] = useState(location.state?.email || '');
   const password = location.state?.password || null; // passed from Register for auto-login
   const [otp, setOtp] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,11 +21,15 @@ const VerifyEmail = () => {
   const handleVerify = async e => {
     e.preventDefault();
     setError('');
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA verification.');
+      return;
+    }
     setLoading(true);
     try {
-      await API.post('/auth/verify-otp', { email, otp });
+      await API.post('/auth/verify-otp', { email, otp, captchaToken });
       // Auto-login if we have the password (coming from registration flow).
-      // Uses a dedicated no-captcha endpoint — captcha was already verified at registration.
+      // Uses a dedicated no-captcha endpoint — captcha was already verified above.
       if (password) {
         const res = await API.post('/auth/login-after-verify', { email, password });
         login(res.data.user, res.data.token);
@@ -34,6 +41,8 @@ const VerifyEmail = () => {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Verification failed');
+      recaptchaRef.current?.reset();
+      setCaptchaToken('');
     } finally {
       setLoading(false);
     }
@@ -78,7 +87,16 @@ const VerifyEmail = () => {
               style={{ letterSpacing: 8, fontSize: 20, textAlign: 'center' }}
             />
           </div>
-          <button type="submit" className="btn btn-primary w-full btn-lg" disabled={loading}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+              onChange={token => setCaptchaToken(token || '')}
+              onExpired={() => setCaptchaToken('')}
+              theme="dark"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary w-full btn-lg" disabled={loading || !captchaToken}>
             {loading ? 'Verifying...' : 'Verify Email'}
           </button>
         </form>

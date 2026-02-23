@@ -70,7 +70,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/verify-otp
-router.post('/verify-otp', async (req, res) => {
+router.post('/verify-otp', verifyCaptcha, async (req, res) => {
   const { email, otp } = req.body;
   try {
     const record = await OTP.findOne({ email, otp });
