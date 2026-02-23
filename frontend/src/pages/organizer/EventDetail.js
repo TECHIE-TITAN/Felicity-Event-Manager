@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { fmtDateTime, fmtDate, toDateTimeLocalValue, toDateValue } from '../../utils/dateUtils';
+import { fmtDateTime, fmtDate, toDateTimeLocalValue } from '../../utils/dateUtils';
 
 const OrganizerEventDetail = () => {
   const { id } = useParams();
