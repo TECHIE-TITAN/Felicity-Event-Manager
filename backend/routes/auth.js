@@ -14,7 +14,10 @@ const verifyCaptcha = require('../middleware/captcha');
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 
 // POST /api/auth/register
-router.post('/register', verifyCaptcha, async (req, res) => {
+// No server-side captcha check here — Render cold-start (~50s) causes reCAPTCHA tokens to
+// expire before the request reaches Google's verify API. Email OTP is the anti-abuse gate
+// for registration. Captcha is still enforced on /login (brute-force risk).
+router.post('/register', async (req, res) => {
   const { firstName, lastName, email, password, participantType, collegeName, contactNumber, interests } = req.body;
 
   try {
