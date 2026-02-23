@@ -284,7 +284,18 @@ const EventDetail = () => {
             {/* Merchandise Form */}
             {showMerchForm && event.type === 'merchandise' && (
               <div className="card mb-4">
-                <h3 style={{ marginBottom: 16, fontWeight: 700 }}>Place Merchandise Order</h3>
+                <h3 style={{ marginBottom: 4, fontWeight: 700 }}>Place Merchandise Order</h3>
+                {/* Purchase limit indicator */}
+                {(() => {
+                  const limit = event.purchaseLimit || 1;
+                  const totalSelected = Object.values(merchandiseData.variantQuantities).reduce((s, q) => s + q, 0);
+                  return (
+                    <div style={{ fontSize: 12, color: totalSelected >= limit ? 'var(--accent-red)' : 'var(--text-muted)', marginBottom: 16 }}>
+                      {totalSelected}/{limit} item{limit !== 1 ? 's' : ''} selected
+                      {totalSelected >= limit && ' — purchase limit reached'}
+                    </div>
+                  );
+                })()}
 
                 {/* Variant tabs */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
@@ -326,10 +337,15 @@ const EventDetail = () => {
                             <span style={{ fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{qty}</span>
                             <button
                               style={{ width: 28, height: 28, border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)', cursor: 'pointer', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                              onClick={() => setMerchandiseData(p => ({
-                                ...p,
-                                variantQuantities: { ...p.variantQuantities, [v._id]: Math.min(v.stock, (p.variantQuantities[v._id] || 0) + 1) }
-                              }))}
+                              onClick={() => setMerchandiseData(p => {
+                                const currentTotal = Object.values(p.variantQuantities).reduce((s, q) => s + q, 0);
+                                const limit = event.purchaseLimit || 1;
+                                if (currentTotal >= limit) return p; // already at purchase limit
+                                return {
+                                  ...p,
+                                  variantQuantities: { ...p.variantQuantities, [v._id]: Math.min(v.stock, (p.variantQuantities[v._id] || 0) + 1) }
+                                };
+                              })}
                             >+</button>
                           </div>
                         )}
