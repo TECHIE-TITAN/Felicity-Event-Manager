@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
+import { fmtDate } from '../../utils/dateUtils';
 
 const OrganizerEvents = () => {
   const [events, setEvents] = useState([]);
@@ -71,7 +72,7 @@ const OrganizerEvents = () => {
                     </td>
                     <td style={{ color: 'var(--success)' }}>₹{ev.analytics?.revenue || 0}</td>
                     <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                      {ev.eventDates?.start ? new Date(ev.eventDates.start).toLocaleDateString() : '—'}
+                      {ev.eventDates?.start ? fmtDate(ev.eventDates.start) : '—'}
                     </td>
                     <td>
                       <div className="flex gap-2">

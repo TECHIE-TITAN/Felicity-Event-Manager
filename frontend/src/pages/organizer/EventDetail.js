@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { fmtDateTime, fmtDate, toDateTimeLocalValue, toDateValue } from '../../utils/dateUtils';
 
 const OrganizerEventDetail = () => {
   const { id } = useParams();
@@ -47,9 +48,9 @@ const OrganizerEventDetail = () => {
         name: evRes.data.name,
         description: evRes.data.description,
         eligibility: evRes.data.eligibility,
-        startDate: evRes.data.startDate ? new Date(evRes.data.startDate).toISOString().slice(0, 16) : '',
-        endDate: evRes.data.endDate ? new Date(evRes.data.endDate).toISOString().slice(0, 16) : '',
-        registrationDeadline: evRes.data.registrationDeadline?.split('T')[0] || '',
+        startDate: toDateTimeLocalValue(evRes.data.startDate),
+        endDate: toDateTimeLocalValue(evRes.data.endDate),
+        registrationDeadline: toDateTimeLocalValue(evRes.data.registrationDeadline),
         registrationLimit: evRes.data.registrationLimit,
         registrationFee: evRes.data.registrationFee,
         tags: evRes.data.tags?.join(', ') || ''
@@ -351,7 +352,7 @@ const OrganizerEventDetail = () => {
                 <div className="grid-2">
                   <div className="form-group">
                     <label className="form-label">Registration Deadline</label>
-                    <input type="date" className="form-input" value={editForm.registrationDeadline} onChange={e => setEditForm(p => ({ ...p, registrationDeadline: e.target.value }))} />
+                    <input type="datetime-local" className="form-input" value={editForm.registrationDeadline} onChange={e => setEditForm(p => ({ ...p, registrationDeadline: e.target.value }))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Registration Limit (0 = unlimited)</label>
@@ -379,7 +380,7 @@ const OrganizerEventDetail = () => {
                 <div className="grid-2">
                   <div className="form-group">
                     <label className="form-label">Registration Deadline <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(extend only)</span></label>
-                    <input type="date" className="form-input" value={editForm.registrationDeadline} onChange={e => setEditForm(p => ({ ...p, registrationDeadline: e.target.value }))} min={editForm.registrationDeadline} />
+                    <input type="datetime-local" className="form-input" value={editForm.registrationDeadline} onChange={e => setEditForm(p => ({ ...p, registrationDeadline: e.target.value }))} min={editForm.registrationDeadline} />
                   </div>
                   {event.type !== 'merchandise' && (
                     <div className="form-group">
@@ -513,7 +514,7 @@ const OrganizerEventDetail = () => {
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={analytics.history || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                    <XAxis dataKey="date" stroke="#666" tick={{ fontSize: 11 }} tickFormatter={d => new Date(d).toLocaleDateString()} />
+                    <XAxis dataKey="date" stroke="#666" tick={{ fontSize: 11 }} tickFormatter={d => fmtDate(d)} />
                     <YAxis stroke="#666" tick={{ fontSize: 11 }} />
                     <Tooltip contentStyle={{ background: '#111', border: '1px solid #cc0000', color: '#fff', borderRadius: 0 }} />
                     <Line type="monotone" dataKey="registrations" stroke="#cc0000" strokeWidth={2} dot={false} />
@@ -525,7 +526,7 @@ const OrganizerEventDetail = () => {
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={analytics.history || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                    <XAxis dataKey="date" stroke="#666" tick={{ fontSize: 11 }} tickFormatter={d => new Date(d).toLocaleDateString()} />
+                    <XAxis dataKey="date" stroke="#666" tick={{ fontSize: 11 }} tickFormatter={d => fmtDate(d)} />
                     <YAxis stroke="#666" tick={{ fontSize: 11 }} />
                     <Tooltip contentStyle={{ background: '#111', border: '1px solid #cc0000', color: '#fff', borderRadius: 0 }} />
                     <Bar dataKey="revenue" fill="#cc0000" />
@@ -569,7 +570,7 @@ const OrganizerEventDetail = () => {
                                 {l.participantId?.firstName} {l.participantId?.lastName}
                               </td>
                               <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{l.ticketId}</td>
-                              <td>{new Date(l.scannedAt).toLocaleString()}</td>
+                              <td>{fmtDateTime(l.scannedAt)}</td>
                               <td>
                                 {l.manualOverride
                                   ? <span className="badge badge-pending">Manual</span>
@@ -650,7 +651,7 @@ const OrganizerEventDetail = () => {
                           </td>
                           <td>{l.participantId?.userId?.email}</td>
                           <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{l.ticketId}</td>
-                          <td>{new Date(l.scannedAt).toLocaleString()}</td>
+                          <td>{fmtDateTime(l.scannedAt)}</td>
                           <td>
                             {l.manualOverride
                               ? <span className="badge badge-pending">Manual</span>
@@ -706,7 +707,7 @@ const OrganizerEventDetail = () => {
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontWeight: 700, color: 'var(--success)', fontSize: 16 }}>₹{o.revenueAmount}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Qty: {o.quantity}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(o.createdAt).toLocaleString()}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDateTime(o.createdAt)}</div>
                       </div>
                     </div>
 

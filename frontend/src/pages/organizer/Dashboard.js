@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
+import { fmtDateTime } from '../../utils/dateUtils';
 
 const OrganizerDashboard = () => {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const OrganizerDashboard = () => {
                       <td>{statusBadge(e.status)}</td>
                       <td>{e.analytics?.totalRegistrations || 0}</td>
                       <td style={{ color: 'var(--success)' }}>₹{e.analytics?.revenue || 0}</td>
-                      <td>{e.registrationDeadline ? new Date(e.registrationDeadline).toLocaleDateString() : '—'}</td>
+                      <td>{e.registrationDeadline ? fmtDateTime(e.registrationDeadline) : '—'}</td>
                       <td>
                         <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/organizer/events/${e._id}`)}>
                           Manage

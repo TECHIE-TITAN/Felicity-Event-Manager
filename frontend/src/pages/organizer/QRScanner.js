@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import API from '../../api/axios';
+import { fmtDateTime } from '../../utils/dateUtils';
 
 const QR_ELEMENT_ID = 'qr-reader';
 
@@ -347,7 +348,7 @@ const QRScanner = () => {
                                 {p.attendanceMarked ? '✅ Present' : '❌ Absent'}
                               </span></td>
                               <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                                {p.attendanceTimestamp ? new Date(p.attendanceTimestamp).toLocaleString() : '—'}
+                                {p.attendanceTimestamp ? fmtDateTime(p.attendanceTimestamp) : '—'}
                               </td>
                             </tr>
                           ))}

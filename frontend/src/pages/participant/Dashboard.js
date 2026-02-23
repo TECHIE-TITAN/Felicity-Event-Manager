@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
+import { fmtDate } from '../../utils/dateUtils';
 
 // localStorage helpers for discussion last-read tracking
 const getLastRead = (eventId) => localStorage.getItem(`discussionLastRead_${eventId}`) || null;
@@ -149,7 +150,7 @@ const RegistrationList = ({ items, statusBadge, onView, unreadMap = {} }) => {
               <td><span className="badge badge-pending">{r.eventId?.type}</span></td>
               <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{r.ticketId || '—'}</td>
               <td>{statusBadge(r.status)}</td>
-              <td>{r.eventId?.startDate ? new Date(r.eventId.startDate).toLocaleDateString() : '—'}</td>
+              <td>{r.eventId?.startDate ? fmtDate(r.eventId.startDate) : '—'}</td>
               <td>
                 {r.qrCodeUrl ? (
                   <img src={r.qrCodeUrl} alt="QR" style={{ width: 40, height: 40, border: '1px solid var(--border-color)' }} />

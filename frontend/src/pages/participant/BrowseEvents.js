@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
+import { fmtDate } from '../../utils/dateUtils';
 
 const BrowseEvents = () => {
   const navigate = useNavigate();
@@ -128,7 +129,7 @@ const EventCard = ({ event, onClick }) => {
         <div className="event-card-desc">{event.description}</div>
         <div className="event-card-meta">
           <span className="event-meta-item">
-            📅 {event.startDate ? new Date(event.startDate).toLocaleDateString() : 'TBD'}
+            📅 {event.startDate ? fmtDate(event.startDate) : 'TBD'}
           </span>
           {event.registrationFee > 0 && (
             <span className="event-meta-item" style={{ color: 'var(--success)' }}>₹{event.registrationFee}</span>

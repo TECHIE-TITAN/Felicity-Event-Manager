@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../../api/axios';
+import { fmtDateTime } from '../../utils/dateUtils';
 
 const STATUS_COLORS = { pending: 'var(--warning)', approved: 'var(--success)', rejected: 'var(--accent-red)' };
 const STATUS_ICONS  = { pending: '⏳', approved: '✅', rejected: '❌' };
@@ -139,7 +140,7 @@ const PasswordResetRequests = () => {
                       {STATUS_ICONS[r.status]} {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {new Date(r.requestedAt).toLocaleString()}
+                      {fmtDateTime(r.requestedAt)}
                     </div>
                   </div>
                 </div>
@@ -158,7 +159,7 @@ const PasswordResetRequests = () => {
 
                 {r.resolvedAt && (
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>
-                    Resolved: {new Date(r.resolvedAt).toLocaleString()}
+                    Resolved: {fmtDateTime(r.resolvedAt)}
                   </div>
                 )}
 

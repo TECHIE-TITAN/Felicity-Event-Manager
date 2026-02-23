@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { jsPDF } from 'jspdf';
+import { fmtDateTime, fmtDate } from '../../utils/dateUtils';
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -177,10 +178,10 @@ const EventDetail = () => {
     // Info rows
     const rows = [
       ['Ticket ID', myReg.ticketId || '—'],
-      ['Date', event.startDate ? new Date(event.startDate).toLocaleString('en-IN') : 'TBD'],
+      ['Date', event.startDate ? fmtDateTime(event.startDate) : 'TBD'],
       ['Venue / Mode', event.venue || event.type || '—'],
       ['Fee', event.registrationFee > 0 ? `INR ${event.registrationFee}` : 'Free'],
-      ['Registered', new Date(myReg.createdAt || Date.now()).toLocaleDateString('en-IN')],
+      ['Registered', fmtDate(myReg.createdAt || Date.now())],
     ];
 
     let y = 132;
@@ -442,9 +443,9 @@ const EventDetail = () => {
           <div>
             <div className="card mb-4" style={{ borderTop: '3px solid var(--accent-red)' }}>
               <h3 style={{ marginBottom: 16, fontWeight: 700 }}>Event Details</h3>
-              <InfoRow label="Start Date" value={event.startDate ? new Date(event.startDate).toLocaleString() : 'TBD'} />
-              <InfoRow label="End Date" value={event.endDate ? new Date(event.endDate).toLocaleString() : 'TBD'} />
-              <InfoRow label="Reg. Deadline" value={event.registrationDeadline ? new Date(event.registrationDeadline).toLocaleString() : 'TBD'} />
+              <InfoRow label="Start Date" value={fmtDateTime(event.startDate)} />
+              <InfoRow label="End Date" value={fmtDateTime(event.endDate)} />
+              <InfoRow label="Reg. Deadline" value={fmtDateTime(event.registrationDeadline)} />
               {event.type !== 'merchandise' && (
                 <InfoRow label="Fee" value={event.registrationFee > 0 ? `₹${event.registrationFee}` : 'Free'} />
               )}
@@ -557,7 +558,7 @@ const MessageItem = ({ msg, replies, onReply, onReact }) => (
       <span style={{ fontSize: 12, fontWeight: 600, color: msg.role === 'organizer' ? 'var(--accent-red)' : 'var(--text-secondary)' }}>
         {msg.userId?.email} {msg.role === 'organizer' && '(Organizer)'} {msg.isPinned && '📌'}
       </span>
-      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(msg.createdAt).toLocaleString()}</span>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDateTime(msg.createdAt)}</span>
     </div>
     <p style={{ fontSize: 13, color: 'var(--text-primary)' }}>{msg.messageText}</p>
     <div className="flex gap-2 mt-2" style={{ flexWrap: 'wrap' }}>

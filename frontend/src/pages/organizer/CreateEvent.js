@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import API from '../../api/axios';
+import { toDateTimeLocalValue } from '../../utils/dateUtils';
 
 const FIELD_TYPES = ['text', 'email', 'number', 'select', 'radio', 'checkbox', 'textarea'];
 
@@ -35,9 +36,9 @@ const CreateEvent = () => {
           description: e.description || '',
           type: e.type || 'normal',
           eligibility: e.eligibility || 'ALL',
-          registrationDeadline: e.registrationDeadline ? new Date(e.registrationDeadline).toISOString().slice(0, 16) : '',
-          startDate: e.startDate ? new Date(e.startDate).toISOString().slice(0, 16) : '',
-          endDate: e.endDate ? new Date(e.endDate).toISOString().slice(0, 16) : '',
+          registrationDeadline: toDateTimeLocalValue(e.registrationDeadline),
+          startDate: toDateTimeLocalValue(e.startDate),
+          endDate: toDateTimeLocalValue(e.endDate),
           registrationLimit: e.registrationLimit ?? '',
           registrationFee: e.registrationFee ?? '',
           tags: (e.tags || []).join(', '),

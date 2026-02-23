@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../../api/axios';
+import { fmtDateTime } from '../../utils/dateUtils';
 
 const STATUS_COLORS = { pending: 'var(--warning)', approved: 'var(--success)', rejected: 'var(--accent-red)' };
 const STATUS_ICONS  = { pending: '⏳', approved: '✅', rejected: '❌' };
@@ -248,7 +249,7 @@ const OrganizerProfile = () => {
                       {STATUS_ICONS[h.status]} {h.status.charAt(0).toUpperCase() + h.status.slice(1)}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      Requested: {new Date(h.requestedAt).toLocaleString()}
+                      Requested: {fmtDateTime(h.requestedAt)}
                     </span>
                   </div>
                   {h.reason && (
@@ -263,7 +264,7 @@ const OrganizerProfile = () => {
                   )}
                   {h.resolvedAt && (
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                      Resolved: {new Date(h.resolvedAt).toLocaleString()}
+                      Resolved: {fmtDateTime(h.resolvedAt)}
                     </div>
                   )}
                 </div>

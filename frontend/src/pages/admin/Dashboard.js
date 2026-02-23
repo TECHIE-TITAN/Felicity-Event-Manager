@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../api/axios';
+import { fmtDateTime } from '../../utils/dateUtils';
 
 const AdminDashboard = () => {
   const [organizers, setOrganizers] = useState([]);
@@ -106,7 +107,7 @@ const AdminDashboard = () => {
                       </span>
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{l.userId?.email || '—'}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(l.createdAt).toLocaleString()}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{fmtDateTime(l.createdAt)}</td>
                   </tr>
                 ))}
                 {securityLogs.length === 0 && (

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../../api/axios';
+import { fmtDateTime } from '../../utils/dateUtils';
 
 const SecurityMonitoring = () => {
   const [logs, setLogs] = useState([]);
@@ -166,7 +167,7 @@ const SecurityMonitoring = () => {
                   </td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{l.reason || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{l.userId?.email || '—'}</td>
-                  <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(l.createdAt).toLocaleString()}</td>
+                  <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{fmtDateTime(l.createdAt)}</td>
                   <td>
                     {l.actionType === 'blocked' && blockedIPs.has(l.ipAddress) && (
                       <button className="btn btn-ghost btn-sm" style={{ color: 'var(--success)', fontSize: 11 }}
