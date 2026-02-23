@@ -33,8 +33,11 @@ const sendEmail = async ({ to, subject, html, type, metadata = {} }) => {
       }
     );
   } catch (err) {
-    console.error('Email send error:', err.response?.data || err.message);
+    const errDetail = err.response?.data || err.message;
+    console.error('Email send error:', JSON.stringify(errDetail, null, 2));
     status = 'failed';
+    // Re-throw so callers (e.g. /register) can roll back DB writes
+    throw new Error(`Email failed: ${JSON.stringify(errDetail)}`);
   }
 
   await EmailLog.create({
