@@ -149,8 +149,9 @@ All variables are documented in [`backend/.env.example`](backend/.env.example). 
 |---|---|---|
 | `MONGO_URI` | ✅ | MongoDB Atlas connection string |
 | `JWT_SECRET` | ✅ | Secret used to sign JWTs — use a long random string |
-| `SMTP_HOST/PORT/USER/PASS` | ✅ | SMTP credentials for transactional email |
-| `FRONTEND_URL` | ✅ | Allowed CORS origin (e.g. `http://localhost:3000`) |
+| `BREVO_API_KEY` | ✅ | Brevo API key for transactional email |
+| `EMAIL_FROM` | ✅ | Verified sender address in your Brevo account |
+| `FRONTEND_URL` | ✅ | Allowed CORS origin (e.g. `https://your-app.vercel.app`) |
 | `CLOUDINARY_*` | ✅ | Cloudinary cloud name, API key & secret |
 | `RECAPTCHA_SECRET_KEY` | ⬜ | Skipped automatically when missing (dev-friendly) |
 | `DISCORD_WEBHOOK_URL` | ⬜ | Discord webhook for security alerts |

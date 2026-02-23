@@ -59,35 +59,51 @@ router.post('/event/:eventId', protect, requireRole('participant'), async (req, 
       qrCodeUrl
     });
 
-    await Participant.findByIdAndUpdate(participant._id, { $addToSet: { registeredEvents: event._id } });
+    try {
+      const isIIIT = participant.participantType === 'IIIT';
 
-    const isIIIT = participant.participantType === 'IIIT';
-    await Event.findByIdAndUpdate(event._id, {
-      $inc: {
-        'analytics.totalRegistrations': 1,
-        [`analytics.${isIIIT ? 'iiitRegistrations' : 'externalRegistrations'}`]: 1,
-        'analytics.revenue': event.registrationFee || 0
-      }
-    });
+      await Participant.findByIdAndUpdate(participant._id, { $addToSet: { registeredEvents: event._id } });
 
-    const user = req.user;
-    await sendEmail({
-      to: user.email,
-      subject: `Felicity – Registration Confirmed: ${event.name}`,
-      html: `<div style="font-family:Arial;background:#0a0a0a;color:#fff;padding:30px;border:2px solid #cc0000">
-        <h2 style="color:#cc0000">Felicity</h2>
-        <h3>You're registered for <span style="color:#cc0000">${event.name}</span></h3>
-        <p><strong>Ticket ID:</strong> ${ticketId}</p>
-        <p>Show your QR code at the event entrance.</p>
-        <img src="${qrCodeUrl}" style="max-width:200px" alt="QR Code"/>
-      </div>`,
-      type: 'ticket',
-      metadata: { ticketId, eventId: event._id.toString() }
-    });
+      await Event.findByIdAndUpdate(event._id, {
+        $inc: {
+          'analytics.totalRegistrations': 1,
+          [`analytics.${isIIIT ? 'iiitRegistrations' : 'externalRegistrations'}`]: 1,
+          'analytics.revenue': event.registrationFee || 0
+        }
+      });
 
-    res.status(201).json({ message: 'Registered successfully', registration });
+      const user = req.user;
+      await sendEmail({
+        to: user.email,
+        subject: `Felicity – Registration Confirmed: ${event.name}`,
+        html: `<div style="font-family:Arial;background:#0a0a0a;color:#fff;padding:30px;border:2px solid #cc0000">
+          <h2 style="color:#cc0000">Felicity</h2>
+          <h3>You're registered for <span style="color:#cc0000">${event.name}</span></h3>
+          <p><strong>Ticket ID:</strong> ${ticketId}</p>
+          <p>Show your QR code at the event entrance.</p>
+          <img src="${qrCodeUrl}" style="max-width:200px" alt="QR Code"/>
+        </div>`,
+        type: 'ticket',
+        metadata: { ticketId, eventId: event._id.toString() }
+      });
+
+      res.status(201).json({ message: 'Registered successfully', registration });
+    } catch (innerErr) {
+      // Roll back all DB writes made after Registration.create
+      await Registration.findByIdAndDelete(registration._id);
+      await Participant.findByIdAndUpdate(participant._id, { $pull: { registeredEvents: event._id } });
+      await Event.findByIdAndUpdate(event._id, {
+        $inc: {
+          'analytics.totalRegistrations': -1,
+          [`analytics.${participant.participantType === 'IIIT' ? 'iiitRegistrations' : 'externalRegistrations'}`]: -1,
+          'analytics.revenue': -(event.registrationFee || 0)
+        }
+      });
+      console.error('Event registration rolled back:', innerErr.message);
+      throw innerErr;
+    }
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Registration failed. Please try again.', error: err.message });
   }
 });
 

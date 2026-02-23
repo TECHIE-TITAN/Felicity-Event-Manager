@@ -16,7 +16,6 @@ const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: 
 // POST /api/auth/register
 router.post('/register', verifyCaptcha, async (req, res) => {
   const { firstName, lastName, email, password, participantType, collegeName, contactNumber, interests } = req.body;
-  const ip = req.ip;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -31,27 +30,39 @@ router.post('/register', verifyCaptcha, async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 12);
+
+    // Create user first — we may need to roll it back if anything below fails
     const user = await User.create({ role: 'participant', email, password: hashed, isEmailVerified: false });
-    await Participant.create({ userId: user._id, firstName, lastName, participantType, collegeName, contactNumber, interests: interests || [] });
 
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-    await OTP.deleteMany({ email });
-    await OTP.create({ email, otp, expiresAt });
+    try {
+      await Participant.create({ userId: user._id, firstName, lastName, participantType, collegeName, contactNumber, interests: interests || [] });
 
-    await sendEmail({
-      to: email,
-      subject: 'Felicity – Verify Your Email',
-      html: `<div style="font-family:Arial;background:#000;color:#fff;padding:30px;border-radius:0;border:2px solid #cc0000"><h2 style="color:#cc0000">Felicity</h2><p>Your OTP for email verification is:</p><h1 style="color:#cc0000;letter-spacing:8px">${otp}</h1><p>Valid for 10 minutes.</p></div>`,
-      type: 'otp',
-      metadata: { email }
-    });
+      // Generate OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      await OTP.deleteMany({ email });
+      await OTP.create({ email, otp, expiresAt });
 
-    res.status(201).json({ message: 'Registration successful. Check your email for OTP.' });
+      await sendEmail({
+        to: email,
+        subject: 'Felicity – Verify Your Email',
+        html: `<div style="font-family:Arial;background:#000;color:#fff;padding:30px;border-radius:0;border:2px solid #cc0000"><h2 style="color:#cc0000">Felicity</h2><p>Your OTP for email verification is:</p><h1 style="color:#cc0000;letter-spacing:8px">${otp}</h1><p>Valid for 10 minutes.</p></div>`,
+        type: 'otp',
+        metadata: { email }
+      });
+
+      res.status(201).json({ message: 'Registration successful. Check your email for OTP.' });
+    } catch (innerErr) {
+      // Roll back: delete the user (and participant if it was created) so the email stays free to register again
+      await User.findByIdAndDelete(user._id);
+      await Participant.findOneAndDelete({ userId: user._id });
+      await OTP.deleteMany({ email });
+      console.error('Registration rolled back due to error:', innerErr.message);
+      throw innerErr; // bubble up to outer catch for the 500 response
+    }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Registration failed. Please try again.', error: err.message });
   }
 });
 
@@ -66,6 +77,30 @@ router.post('/verify-otp', async (req, res) => {
     await User.findOneAndUpdate({ email }, { isEmailVerified: true });
     await OTP.deleteMany({ email });
     res.json({ message: 'Email verified successfully. You can now login.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// POST /api/auth/login-after-verify
+// No captcha — user already passed captcha during registration.
+// Requires the account to be freshly verified (isEmailVerified: true).
+router.post('/login-after-verify', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ message: 'Email not verified' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+    const token = signToken(user._id);
+    res.json({ token, user: { id: user._id, role: user.role, email: user.email } });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

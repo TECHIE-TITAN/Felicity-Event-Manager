@@ -14,15 +14,11 @@ services:
         sync: false
       - key: JWT_EXPIRE
         value: 7d
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USER
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
         sync: false
-      - key: SMTP_PASS
-        sync: false
-      - key: FROM_EMAIL
+      - key: EMAIL_FROM
         sync: false
       - key: FROM_NAME
         value: Felicity Fest

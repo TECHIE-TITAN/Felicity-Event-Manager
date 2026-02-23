@@ -1,27 +1,39 @@
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 const EmailLog = require('../models/EmailLog');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
-
+/**
+ * Send a transactional email via the Brevo (Sendinblue) REST API.
+ * Env vars required:
+ *   BREVO_API_KEY  – your Brevo API key
+ *   EMAIL_FROM     – verified sender address  e.g. noreply@felicity.fest
+ *   EMAIL_PROVIDER – optional label stored in logs (defaults to 'brevo')
+ */
 const sendEmail = async ({ to, subject, html, type, metadata = {} }) => {
+  const provider = process.env.EMAIL_PROVIDER || 'brevo';
   let status = 'sent';
+
   try {
-    await transporter.sendMail({
-      from: `"Felicity Fest" <${process.env.SMTP_USER}>`,
-      to,
-      subject,
-      html
-    });
+    await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        sender: {
+          name: process.env.FROM_NAME || 'Felicity Fest',
+          email: process.env.EMAIL_FROM,
+        },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          'api-key': process.env.BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+      }
+    );
   } catch (err) {
-    console.error('Email send error:', err.message);
+    console.error('Email send error:', err.response?.data || err.message);
     status = 'failed';
   }
 
@@ -30,10 +42,11 @@ const sendEmail = async ({ to, subject, html, type, metadata = {} }) => {
     subject,
     type,
     status,
-    provider: 'gmail',
+    provider,
     metadata,
-    sentAt: new Date()
+    sentAt: new Date(),
   });
 };
 
 module.exports = sendEmail;
+

@@ -21,9 +21,10 @@ const VerifyEmail = () => {
     setLoading(true);
     try {
       await API.post('/auth/verify-otp', { email, otp });
-      // Auto-login if we have the password (coming from registration flow)
+      // Auto-login if we have the password (coming from registration flow).
+      // Uses a dedicated no-captcha endpoint — captcha was already verified at registration.
       if (password) {
-        const res = await API.post('/auth/login', { email, password });
+        const res = await API.post('/auth/login-after-verify', { email, password });
         login(res.data.user, res.data.token);
         setSuccess('Email verified! Setting up your account...');
         setTimeout(() => navigate('/onboarding', { replace: true }), 800);
